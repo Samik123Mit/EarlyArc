@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EarlyArc — AI-Enabled Multimodal Autism Screening Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0D2137;
+  --navy-mid: #1A3A5C;
+  --navy-light: #2A5080;
+  --teal: #00A693;
+  --teal-dark: #007A6B;
+  --teal-light: #D0F0EC;
+  --amber: #E07B24;
+  --amber-light: #FEF3E2;
+  --red: #C0392B;
+  --red-light: #FDECEA;
+  --green: #27AE60;
+  --green-light: #D5F5E3;
+  --purple: #6B46C1;
+  --purple-light: #EDE9FE;
+  --white: #FFFFFF;
+  --off-white: #F4F7FA;
+  --border: #D8DEE9;
+  --text-dark: #1A2633;
+  --text-mid: #4A5568;
+  --text-light: #94A3B8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--off-white);
+  color: var(--text-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── GLOBAL UTILITIES ─── */
+.hidden { display:none !important; }
+.screen { display:none; }
+.screen.active { display:block; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ─── TOP NAV ─── */
+#topnav {
+  position: fixed; top:0; left:0; right:0; z-index:1000;
+  background: var(--navy);
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 2px solid var(--teal);
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo {
+  width:32px; height:32px;
+  background: linear-gradient(135deg, var(--teal), var(--amber));
+  border-radius: 8px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 16px;
+}
+.nav-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px; color: var(--white);
+  letter-spacing: -0.3px;
+}
+.nav-subtitle { font-size:10px; color: var(--teal); letter-spacing:2px; text-transform:uppercase; }
+.nav-tabs { display:flex; gap:4px; }
+.nav-tab {
+  padding: 6px 14px; border-radius:6px; font-size:12px; font-weight:500;
+  cursor:pointer; color: var(--text-light); background: transparent;
+  border: none; transition: all 0.2s;
+}
+.nav-tab:hover, .nav-tab.active {
+  background: rgba(0,166,147,0.2); color: var(--teal);
+}
+.nav-badge {
+  background: var(--teal); color: var(--navy); font-size:10px;
+  padding:2px 8px; border-radius:20px; font-weight:700; letter-spacing:0.5px;
+}
+
+/* ─── MAIN CONTAINER ─── */
+#main { padding-top: 56px; min-height: 100vh; }
+
+/* ══════════════════════════════════════════
+   SCREEN 1: LANDING
+══════════════════════════════════════════ */
+#screen-landing {
+  background: var(--navy);
+  min-height: calc(100vh - 56px);
+  display: none;
+  position: relative;
+  overflow: hidden;
+}
+#screen-landing.active { display:flex; flex-direction:column; }
+.landing-hero {
+  flex:1; display:grid; grid-template-columns:1fr 1fr;
+  align-items:center; gap:60px; padding:60px 80px;
+  position: relative; z-index:2;
+}
+.landing-bg-grid {
+  position:absolute; inset:0; opacity:0.04;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.5) 39px, rgba(255,255,255,0.5) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.5) 39px, rgba(255,255,255,0.5) 40px);
+}
+.landing-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background: rgba(0,166,147,0.15); border:1px solid rgba(0,166,147,0.4);
+  padding:6px 14px; border-radius:20px; margin-bottom:20px;
+}
+.badge-dot { width:8px;height:8px;border-radius:50%;background:var(--teal); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+.badge-text { font-size:12px; color:var(--teal); font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+
+.hero-tag { font-size:12px; color:var(--text-light); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+.hero-h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 52px; line-height:1.1; color:var(--white);
+  margin-bottom: 16px;
+}
+.hero-h1 span { color:var(--teal); }
+.hero-sub { font-size:16px; color:var(--text-light); line-height:1.7; margin-bottom:32px; max-width:480px; }
+
+.hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:32px; }
+.hero-stat {
+  background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; padding:14px 16px;
+}
+.hero-stat-val { font-size:22px; font-weight:700; color:var(--teal); }
+.hero-stat-lab { font-size:11px; color:var(--text-light); margin-top:2px; }
+
+.btn-primary {
+  background: var(--teal); color: var(--navy);
+  border:none; padding:14px 28px; border-radius:10px;
+  font-size:15px; font-weight:700; cursor:pointer;
+  display: inline-flex; align-items:center; gap:8px;
+  transition: all 0.2s; font-family:'DM Sans',sans-serif;
+}
+.btn-primary:hover { background: #00bfa8; transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,166,147,0.4); }
+.btn-secondary {
+  background: transparent; color:var(--text-light);
+  border:1px solid var(--border); padding:14px 28px; border-radius:10px;
+  font-size:15px; font-weight:500; cursor:pointer; margin-left:12px;
+  font-family:'DM Sans',sans-serif; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color:var(--teal); color:var(--teal); }
+
+/* Hero right: animated demo preview */
+.hero-visual {
+  background: rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px; padding:24px;
+  backdrop-filter: blur(10px);
+}
+.demo-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.demo-title { font-size:13px; font-weight:600; color:var(--white); }
+.status-live { display:flex;align-items:center;gap:6px;font-size:11px;color:var(--teal); }
+.live-dot { width:8px;height:8px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite; }
+
+.mini-metrics { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; margin-bottom:16px; }
+.mini-metric {
+  background: rgba(0,166,147,0.08); border:1px solid rgba(0,166,147,0.2);
+  border-radius:8px; padding:10px 12px;
+}
+.mini-metric-val { font-size:18px; font-weight:700; color:var(--teal); font-family:'JetBrains Mono',monospace; }
+.mini-metric-lab { font-size:10px; color:var(--text-light); }
+
+#landing-eeg { width:100%; height:80px; }
+
+.feature-bars { margin-top:16px; }
+.feature-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.feature-bar-label { font-size:10px; color:var(--text-light); width:110px; flex-shrink:0; }
+.feature-bar-track { flex:1; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+.feature-bar-fill { height:100%; border-radius:3px; transition: width 2s ease; }
+.feature-bar-val { font-size:10px; color:var(--teal); width:30px; text-align:right; font-family:'JetBrains Mono',monospace; }
+
+.landing-logos {
+  background: rgba(255,255,255,0.03); border-top:1px solid rgba(255,255,255,0.08);
+  padding:20px 80px; display:flex; align-items:center; gap:40px;
+}
+.logo-label { font-size:11px; color:var(--text-light); letter-spacing:1px; text-transform:uppercase; }
+.logo-tags { display:flex; gap:12px; flex-wrap:wrap; }
+.logo-tag {
+  background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+  padding:6px 14px; border-radius:6px; font-size:12px; color:var(--text-light);
+}
+
+/* ══════════════════════════════════════════
+   SCREEN 2: SCREENING DEMO (Multi-step)
+══════════════════════════════════════════ */
+#screen-screening {
+  min-height: calc(100vh - 56px);
+  display: none; flex-direction:column;
+}
+#screen-screening.active { display:flex; }
+
+.screening-layout {
+  display: grid; grid-template-columns: 260px 1fr;
+  flex:1;
+}
+
+/* Sidebar */
+.screening-sidebar {
+  background: var(--navy);
+  padding: 24px 0;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-patient {
+  padding: 0 20px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  margin-bottom:16px;
+}
+.patient-avatar {
+  width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg,var(--teal),var(--amber));
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:10px;
+}
+.patient-name { font-size:15px;font-weight:600;color:var(--white); }
+.patient-meta { font-size:11px;color:var(--text-light);margin-top:2px; }
+.patient-id { font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);margin-top:4px; }
+
+.sidebar-steps { padding:0 12px; }
+.sidebar-step {
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px; border-radius:8px; margin-bottom:4px;
+  cursor:pointer; transition:all 0.2s;
+}
+.sidebar-step.active { background:rgba(0,166,147,0.15); }
+.sidebar-step.done { opacity:0.7; }
+.step-num {
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--text-light);
+  flex-shrink:0;
+}
+.sidebar-step.active .step-num { background:var(--teal);color:var(--navy); }
+.sidebar-step.done .step-num { background:var(--green);color:var(--white); }
+.step-done-icon { font-size:14px; }
+.step-info { flex:1; }
+.step-name { font-size:13px;font-weight:500;color:var(--text-light); }
+.sidebar-step.active .step-name { color:var(--white); }
+.step-desc { font-size:10px;color:var(--text-light);margin-top:1px; }
+
+/* Main content area */
+.screening-main {
+  flex:1; overflow-y:auto; background:var(--off-white);
+}
+
+/* Step panels */
+.step-panel { display:none; padding:32px; }
+.step-panel.active { display:block; }
+
+.step-header { margin-bottom:28px; }
+.step-badge {
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--teal-light);border:1px solid var(--teal);
+  padding:4px 12px;border-radius:20px;margin-bottom:10px;
+  font-size:11px;font-weight:600;color:var(--teal-dark);letter-spacing:0.5px;text-transform:uppercase;
+}
+.step-title { font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy); }
+.step-subtitle { font-size:14px;color:var(--text-mid);margin-top:6px;line-height:1.6; }
+
+/* ── Step 1: Patient Intake ── */
+.intake-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px; }
+.form-group { display:flex;flex-direction:column;gap:6px; }
+.form-group.full { grid-column:1/-1; }
+.form-label { font-size:12px;font-weight:600;color:var(--text-mid);letter-spacing:0.5px;text-transform:uppercase; }
+.form-input, .form-select {
+  padding:10px 14px;border:1px solid var(--border);border-radius:8px;
+  font-size:14px;font-family:'DM Sans',sans-serif;
+  background:var(--white);color:var(--text-dark);
+  transition:border-color 0.2s;outline:none;
+}
+.form-input:focus, .form-select:focus { border-color:var(--teal); }
+.checklist { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+.check-item {
+  display:flex;align-items:center;gap:10px;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;cursor:pointer;
+  transition:all 0.2s;
+}
+.check-item input[type=checkbox] { width:16px;height:16px;accent-color:var(--teal);cursor:pointer; }
+.check-item label { font-size:13px;color:var(--text-dark);cursor:pointer; }
+
+/* ── Step 2: CV Analysis ── */
+.cv-layout { display:grid;grid-template-columns:1fr 1fr;gap:20px; }
+.cv-video-box {
+  background:var(--navy);border-radius:12px;overflow:hidden;
+  position:relative;aspect-ratio:4/3;
+}
+.cv-video-overlay {
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+}
+.cv-scan-line {
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--teal),transparent);
+  animation:scanLine 2s linear infinite;
+}
+@keyframes scanLine { 0%{top:0} 100%{top:100%} }
+.cv-face-box {
+  width:140px;height:160px;border:2px solid var(--teal);border-radius:4px;
+  position:relative;animation:faceBox 3s ease-in-out infinite;
+}
+@keyframes faceBox { 0%,100%{border-color:var(--teal)} 50%{border-color:var(--amber)} }
+.cv-corner {
+  position:absolute;width:12px;height:12px;
+  border-color:var(--teal);border-style:solid;
+}
+.cv-corner.tl{top:-2px;left:-2px;border-width:3px 0 0 3px;}
+.cv-corner.tr{top:-2px;right:-2px;border-width:3px 3px 0 0;}
+.cv-corner.bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;}
+.cv-corner.br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;}
+
+.gaze-point {
+  position:absolute;width:10px;height:10px;border-radius:50%;
+  background:var(--amber);opacity:0.8;
+  animation:gazeMove 4s ease-in-out infinite;
+}
+@keyframes gazeMove {
+  0%{top:40%;left:45%} 20%{top:38%;left:52%} 40%{top:44%;left:42%}
+  60%{top:39%;left:55%} 80%{top:42%;left:40%} 100%{top:40%;left:45%}
+}
+
+.cv-label {
+  position:absolute;bottom:8px;left:8px;right:8px;
+  background:rgba(13,33,55,0.8);border-radius:6px;padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cv-label-text { font-size:11px;color:var(--text-light); }
+.cv-label-val { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal); }
+
+.cv-metrics { display:flex;flex-direction:column;gap:10px; }
+.cv-metric-card {
+  background:var(--white);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;
+}
+.cv-metric-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:8px; }
+.cv-metric-name { font-size:13px;font-weight:600;color:var(--text-dark); }
+.cv-metric-score {
+  font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;
+}
+.cv-metric-bar { height:6px;background:var(--border);border-radius:3px;overflow:hidden; }
+.cv-metric-fill { height:100%;border-radius:3px; }
+.cv-metric-note { font-size:11px;color:var(--text-light);margin-top:6px; }
+
+/* ── Step 3: EEG ── */
+.eeg-layout { display:grid;grid-template-columns:1fr 300px;gap:20px; }
+.eeg-canvas-box {
+  background:var(--navy);border-radius:12px;padding:16px;
+}
+.eeg-channel-label {
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-light);
+  margin-bottom:4px;
+}
+canvas.eeg-wave { width:100%;display:block; }
+.eeg-bands { display:flex;flex-direction:column;gap:8px; }
+.eeg-band-card {
+  background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+}
+.eeg-band-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:6px; }
+.eeg-band-name { font-size:12px;font-weight:700;color:var(--text-dark); }
+.eeg-band-hz { font-size:10px;color:var(--text-light); }
+.eeg-band-power {
+  font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;
+}
+.eeg-band-bar { height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:4px; }
+.eeg-band-fill { height:100%;border-radius:3px;transition:width 1s ease; }
+.eeg-band-finding { font-size:10px;color:var(--text-light);line-height:1.4; }
+.eeg-status-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;
+}
+.badge-alert { background:var(--red-light);color:var(--red); }
+.badge-normal { background:var(--green-light);color:var(--green); }
+.badge-elevated { background:var(--amber-light);color:var(--amber); }
+
+/* ── Step 4: Fusion Engine ── */
+.fusion-container { max-width:800px;margin:0 auto; }
+.fusion-flow {
+  display:grid;grid-template-columns:1fr auto 1fr auto 1fr;
+  align-items:center;gap:8px;margin-bottom:28px;
+}
+.fusion-input {
+  background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;
+  text-align:center;
+}
+.fusion-input-icon { font-size:24px;margin-bottom:6px; }
+.fusion-input-name { font-size:12px;font-weight:600;color:var(--text-dark); }
+.fusion-input-val { font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-light);margin-top:2px; }
+.fusion-arrow { font-size:20px;color:var(--teal); }
+
+.fusion-engine-box {
+  background:var(--navy);border-radius:12px;padding:24px;
+  text-align:center;margin-bottom:24px;
+  border:2px solid var(--teal);
+  position:relative;overflow:hidden;
+}
+.fusion-engine-glow {
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,rgba(0,166,147,0.15),transparent 70%);
+  animation:glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+.fusion-engine-title { font-size:12px;color:var(--teal);font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px; }
+.risk-gauge { position:relative;width:160px;height:80px;margin:0 auto 8px; }
+.risk-score-big {
+  font-family:'DM Serif Display',serif;
+  font-size:56px;color:var(--amber);
+  font-weight:400;line-height:1;
+  position:relative;z-index:2;
+}
+.risk-label { font-size:12px;color:var(--text-light);margin-top:4px; }
+.risk-ci { font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-light);margin-top:4px; }
+.risk-level {
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(224,123,36,0.2);border:1px solid var(--amber);
+  padding:4px 12px;border-radius:20px;margin-top:10px;
+  font-size:12px;font-weight:700;color:var(--amber);
+}
+
+/* SHAP chart */
+.shap-section { background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px; }
+.shap-title { font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px; }
+.shap-sub { font-size:12px;color:var(--text-light);margin-bottom:16px; }
+.shap-bars { display:flex;flex-direction:column;gap:8px; }
+.shap-row { display:flex;align-items:center;gap:10px; }
+.shap-feat { font-size:11px;color:var(--text-dark);width:160px;flex-shrink:0;font-weight:500; }
+.shap-bar-container { flex:1;position:relative;height:20px;background:var(--border);border-radius:4px;overflow:hidden; }
+.shap-bar-pos { position:absolute;top:0;height:100%;background:var(--teal);border-radius:4px 0 0 4px;right:50%;transition:width 1s ease; }
+.shap-bar-neg { position:absolute;top:0;height:100%;background:var(--red);border-radius:0 4px 4px 0;left:50%;transition:width 1s ease; }
+.shap-center-line { position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--text-mid); }
+.shap-val { font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mid);width:50px;text-align:right; }
+
+/* ── Step 5: Clinical Report ── */
+.report-card {
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;margin-bottom:16px;
+}
+.report-card-header {
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+}
+.report-card-title { font-size:14px;font-weight:700;color:var(--navy); }
+.report-card-body { padding:16px 20px; }
+.recommendation-tag {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;margin-bottom:10px;
+}
+.tag-urgent { background:var(--red-light);color:var(--red); }
+.tag-monitor { background:var(--amber-light);color:var(--amber); }
+.tag-good { background:var(--green-light);color:var(--green); }
+
+.domain-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+.domain-card {
+  background:var(--off-white);border:1px solid var(--border);border-radius:8px;padding:12px;
+}
+.domain-name { font-size:11px;font-weight:600;color:var(--text-dark);margin-bottom:4px; }
+.domain-score-bar { height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:4px; }
+.domain-score-fill { height:100%;border-radius:3px; }
+.domain-score-val { font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700; }
+
+.therapy-modules { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.therapy-module {
+  background:var(--off-white);border-radius:8px;padding:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.module-icon { font-size:20px; }
+.module-info flex:1; }
+.module-name { font-size:13px;font-weight:600;color:var(--text-dark); }
+.module-sessions { font-size:11px;color:var(--text-light); }
+.module-priority {
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;
+}
+.priority-high { background:var(--red-light);color:var(--red); }
+.priority-med { background:var(--amber-light);color:var(--amber); }
+
+/* ══════════════════════════════════════════
+   SCREEN 3: DASHBOARD
+══════════════════════════════════════════ */
+#screen-dashboard {
+  min-height:calc(100vh - 56px);
+  display:none; padding:28px;
+}
+#screen-dashboard.active { display:block; }
+
+.dash-header {
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;
+}
+.dash-title { font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy); }
+.dash-date { font-size:12px;color:var(--text-light); }
+
+.kpi-row { display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px; }
+.kpi-card {
+  background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px;
+  transition:transform 0.2s;
+}
+.kpi-card:hover { transform:translateY(-2px); }
+.kpi-icon { font-size:20px;margin-bottom:8px; }
+.kpi-val { font-size:28px;font-weight:700;color:var(--navy); }
+.kpi-label { font-size:11px;color:var(--text-light);margin-top:2px; }
+.kpi-trend { font-size:11px;margin-top:6px;font-weight:600; }
+.trend-up { color:var(--green); }
+.trend-dn { color:var(--red); }
+
+.dash-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px; }
+.dash-grid-wide { display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px; }
+.dash-card {
+  background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;
+}
+.dash-card-title { font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px; }
+.dash-card-sub { font-size:11px;color:var(--text-light);margin-bottom:16px; }
+
+/* Patient table */
+.patient-table { width:100%;border-collapse:collapse; }
+.patient-table th {
+  text-align:left;font-size:11px;font-weight:600;color:var(--text-light);
+  letter-spacing:0.5px;text-transform:uppercase;padding:8px 12px;
+  border-bottom:1px solid var(--border);
+}
+.patient-table td { padding:10px 12px;font-size:13px;border-bottom:1px solid var(--off-white); }
+.risk-pill {
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;
+  display:inline-block;
+}
+.risk-high { background:var(--red-light);color:var(--red); }
+.risk-mod { background:var(--amber-light);color:var(--amber); }
+.risk-low { background:var(--green-light);color:var(--green); }
+
+.action-btn {
+  background:var(--teal-light);color:var(--teal-dark);
+  border:none;padding:4px 12px;border-radius:6px;
+  font-size:11px;font-weight:600;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background 0.2s;
+}
+.action-btn:hover { background:var(--teal);color:var(--white); }
+
+/* Agent activity */
+.agent-activity { display:flex;flex-direction:column;gap:8px; }
+.agent-event {
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;background:var(--off-white);border-radius:8px;
+}
+.agent-event-icon {
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.agent-event-text { font-size:12px;color:var(--text-dark);line-height:1.5; }
+.agent-event-time { font-size:10px;color:var(--text-light);margin-top:2px; }
+
+/* Therapy progress */
+.progress-item { margin-bottom:14px; }
+.progress-header { display:flex;justify-content:space-between;margin-bottom:6px; }
+.progress-domain { font-size:13px;font-weight:600;color:var(--text-dark); }
+.progress-val { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-mid); }
+.progress-track { height:8px;background:var(--border);border-radius:4px;overflow:hidden; }
+.progress-fill { height:100%;border-radius:4px;position:relative; }
+.progress-fill::after {
+  content:'';position:absolute;right:0;top:0;bottom:0;width:4px;
+  background:rgba(255,255,255,0.4);border-radius:0 4px 4px 0;
+}
+
+/* ══════════════════════════════════════════
+   SCREEN 4: ABOUT / TECH
+══════════════════════════════════════════ */
+#screen-about {
+  min-height:calc(100vh - 56px);display:none;padding:40px 60px;
+}
+#screen-about.active { display:block; }
+.about-grid { display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:32px; }
+.about-card {
+  background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px;
+}
+.about-card-title { font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);margin-bottom:12px; }
+.tech-stack { display:flex;flex-wrap:wrap;gap:8px;margin-top:12px; }
+.tech-tag {
+  background:var(--navy);color:var(--teal);padding:4px 12px;
+  border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;
+}
+.team-member {
+  display:flex;align-items:center;gap:14px;
+  background:var(--off-white);border-radius:10px;padding:14px;margin-bottom:10px;
+}
+.member-avatar {
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--amber));
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.member-name { font-size:14px;font-weight:700;color:var(--navy); }
+.member-role { font-size:11px;color:var(--text-light);margin-top:2px; }
+
+/* ─── STEP NAV BUTTONS ─── */
+.step-nav { display:flex;gap:12px;margin-top:28px;align-items:center; }
+.btn-icon { font-size:16px; }
+
+/* ─── PROCESSING OVERLAY ─── */
+#processing-overlay {
+  position:fixed;inset:0;background:rgba(13,33,55,0.95);
+  z-index:2000;display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;
+}
+#processing-overlay.show { display:flex; }
+.processing-ring {
+  width:80px;height:80px;border-radius:50%;
+  border:3px solid rgba(0,166,147,0.2);
+  border-top:3px solid var(--teal);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.processing-text { font-size:16px;color:var(--white);font-weight:600; }
+.processing-sub { font-size:13px;color:var(--text-light);text-align:center;max-width:300px; }
+.processing-steps { display:flex;flex-direction:column;gap:8px;margin-top:8px;min-width:260px; }
+.proc-step { display:flex;align-items:center;gap:10px;font-size:12px; }
+.proc-step-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.proc-step.done .proc-step-dot { background:var(--teal); }
+.proc-step.active .proc-step-dot { background:var(--amber);animation:pulse 1s infinite; }
+.proc-step.pending .proc-step-dot { background:rgba(255,255,255,0.2); }
+.proc-step.done { color:var(--teal); }
+.proc-step.active { color:var(--amber); }
+.proc-step.pending { color:rgba(255,255,255,0.3); }
+
+/* ─── TOAST ─── */
+#toast {
+  position:fixed;bottom:24px;right:24px;
+  background:var(--navy);color:var(--white);
+  padding:12px 20px;border-radius:10px;
+  border-left:4px solid var(--teal);
+  font-size:13px;font-weight:500;
+  transform:translateY(100px);opacity:0;
+  transition:all 0.3s;z-index:3000;
+}
+#toast.show { transform:translateY(0);opacity:1; }
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1100px) {
+  .landing-hero { grid-template-columns:1fr;padding:40px; }
+  .hero-visual { display:none; }
+  .dash-grid { grid-template-columns:1fr 1fr; }
+  .kpi-row { grid-template-columns:repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav id="topnav">
+  <div class="nav-brand">
+    <div class="nav-logo">🧠</div>
+    <div>
+      <div class="nav-title">EarlyArc</div>
+      <div class="nav-subtitle">ASD Care Platform · IIT Guwahati</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showScreen('landing')">Home</button>
+    <button class="nav-tab" onclick="showScreen('screening')">Live Screening</button>
+    <button class="nav-tab" onclick="showScreen('dashboard')">Clinician Dashboard</button>
+    <button class="nav-tab" onclick="showScreen('about')">Platform & Team</button>
+  </div>
+  <div class="nav-badge">PROTOTYPE v1.0</div>
+</nav>
+
+<div id="main">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN: LANDING                            -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-bg-grid"></div>
+  <div class="landing-hero">
+    <!-- Left -->
+    <div>
+      <div class="landing-badge">
+        <div class="badge-dot"></div>
+        <span class="badge-text">Live Prototype Demo · Team The Innovators · IIT Guwahati</span>
+      </div>
+      <div class="hero-tag">Tata Elxsi Teliport Season 3 · Case Study No. 4</div>
+      <h1 class="hero-h1">Detect Autism<br><span>Earlier.</span> Treat Better.<br>At Scale.</h1>
+      <p class="hero-sub">EarlyArc fuses Computer Vision, EEG biosignals, and Agentic AI to transform ASD screening from a 2.5-year specialist-gated ordeal into a weeks-long, objective, clinician-assisted early identification pathway.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-val">1 in 100</div>
+          <div class="hero-stat-lab">Children affected globally</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">>0.92</div>
+          <div class="hero-stat-lab">Target AUC (screening)</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">47%</div>
+          <div class="hero-stat-lab">Better outcomes with early Rx</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn-primary" onclick="startScreening()">▶ &nbsp;Run Live Demo Screening</button>
+        <button class="btn-secondary" onclick="showScreen('dashboard')">View Dashboard →</button>
+      </div>
+    </div>
+    <!-- Right: Live preview -->
+    <div class="hero-visual">
+      <div class="demo-header">
+        <div class="demo-title">Live Signal Processing</div>
+        <div class="status-live"><div class="live-dot"></div>Streaming</div>
+      </div>
+      <div class="mini-metrics">
+        <div class="mini-metric">
+          <div class="mini-metric-val" id="lm1">0.74</div>
+          <div class="mini-metric-lab">Risk Score</div>
+        </div>
+        <div class="mini-metric">
+          <div class="mini-metric-val" id="lm2">88%</div>
+          <div class="mini-metric-lab">Confidence</div>
+        </div>
+        <div class="mini-metric">
+          <div class="mini-metric-val" id="lm3">12</div>
+          <div class="mini-metric-lab">Features</div>
+        </div>
+      </div>
+      <canvas id="landing-eeg" height="80"></canvas>
+      <div class="feature-bars" style="margin-top:14px">
+        <div style="font-size:10px;color:var(--text-light);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">Feature Weights (CV)</div>
+        <div class="feature-bar-row">
+          <div class="feature-bar-label">Eye Gaze Stability</div>
+          <div class="feature-bar-track"><div class="feature-bar-fill" style="width:86%;background:var(--teal)"></div></div>
+          <div class="feature-bar-val">0.86</div>
+        </div>
+        <div class="feature-bar-row">
+          <div class="feature-bar-label">Joint Attention</div>
+          <div class="feature-bar-track"><div class="feature-bar-fill" style="width:72%;background:var(--amber)"></div></div>
+          <div class="feature-bar-val">0.72</div>
+        </div>
+        <div class="feature-bar-row">
+          <div class="feature-bar-label">Facial Affect Var.</div>
+          <div class="feature-bar-track"><div class="feature-bar-fill" style="width:63%;background:var(--purple)"></div></div>
+          <div class="feature-bar-val">0.63</div>
+        </div>
+        <div class="feature-bar-row">
+          <div class="feature-bar-label">Gesture Coord.</div>
+          <div class="feature-bar-track"><div class="feature-bar-fill" style="width:41%;background:var(--teal)"></div></div>
+          <div class="feature-bar-val">0.41</div>
+        </div>
+        <div class="feature-bar-row">
+          <div class="feature-bar-label">Social Response</div>
+          <div class="feature-bar-track"><div class="feature-bar-fill" style="width:58%;background:var(--amber)"></div></div>
+          <div class="feature-bar-val">0.58</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="landing-logos">
+    <div class="logo-label">Technology Stack</div>
+    <div class="logo-tags">
+      <div class="logo-tag">CNN + LSTM</div>
+      <div class="logo-tag">EEG Signal Processing</div>
+      <div class="logo-tag">Attention Fusion</div>
+      <div class="logo-tag">SHAP Explainability</div>
+      <div class="logo-tag">RL Therapy Agents</div>
+      <div class="logo-tag">FHIR-compatible</div>
+      <div class="logo-tag">Edge Deployable</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN: SCREENING DEMO                     -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-screening" class="screen">
+  <div class="screening-layout">
+
+    <!-- Sidebar -->
+    <div class="screening-sidebar">
+      <div class="sidebar-patient">
+        <div class="patient-avatar">👦</div>
+        <div class="patient-name" id="sb-name">Arjun Sharma</div>
+        <div class="patient-meta">Age: <span id="sb-age">3y 4m</span> · <span id="sb-gender">Male</span></div>
+        <div class="patient-id">ID: EAR-2026-0042</div>
+      </div>
+      <div class="sidebar-steps">
+        <div class="sidebar-step active" id="sstep-1" onclick="gotoStep(1)">
+          <div class="step-num" id="snum-1">1</div>
+          <div class="step-info">
+            <div class="step-name">Patient Intake</div>
+            <div class="step-desc">Demographics & history</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="sstep-2" onclick="gotoStep(2)">
+          <div class="step-num" id="snum-2">2</div>
+          <div class="step-info">
+            <div class="step-name">CV Analysis</div>
+            <div class="step-desc">Gaze & affect detection</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="sstep-3" onclick="gotoStep(3)">
+          <div class="step-num" id="snum-3">3</div>
+          <div class="step-info">
+            <div class="step-name">EEG Processing</div>
+            <div class="step-desc">Band power & ERPs</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="sstep-4" onclick="gotoStep(4)">
+          <div class="step-num" id="snum-4">4</div>
+          <div class="step-info">
+            <div class="step-name">Fusion Engine</div>
+            <div class="step-desc">Multimodal risk score</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="sstep-5" onclick="gotoStep(5)">
+          <div class="step-num" id="snum-5">5</div>
+          <div class="step-info">
+            <div class="step-name">Clinical Report</div>
+            <div class="step-desc">Recommendations & plan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="screening-main">
+
+      <!-- STEP 1: Patient Intake -->
+      <div class="step-panel active" id="panel-1">
+        <div class="step-header">
+          <div class="step-badge">Step 1 of 5 · Screening Agent</div>
+          <h2 class="step-title">Patient Intake & History</h2>
+          <p class="step-subtitle">Enter patient demographics and developmental history. This initializes the Screening Agent baseline profile.</p>
+        </div>
+        <div class="intake-grid">
+          <div class="form-group">
+            <label class="form-label">Child's First Name</label>
+            <input class="form-input" type="text" id="f-name" value="Arjun" oninput="updateSidebar()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" type="text" value="Sharma">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Age (months)</label>
+            <input class="form-input" type="number" id="f-age" value="40" oninput="updateSidebar()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Biological Sex</label>
+            <select class="form-select" id="f-gender" onchange="updateSidebar()">
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Referring Clinician</label>
+            <input class="form-input" type="text" value="Dr. Priya Nair, MBBS">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Primary Concern</label>
+            <input class="form-input" type="text" value="Delayed speech, limited eye contact">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Developmental Milestones Concern (Check all observed)</label>
+            <div class="checklist">
+              <div class="check-item"><input type="checkbox" id="c1" checked><label for="c1">Delayed speech (&gt;18m)</label></div>
+              <div class="check-item"><input type="checkbox" id="c2" checked><label for="c2">Limited eye contact</label></div>
+              <div class="check-item"><input type="checkbox" id="c3" checked><label for="c3">Repetitive behaviors</label></div>
+              <div class="check-item"><input type="checkbox" id="c4"><label for="c4">Doesn't respond to name</label></div>
+              <div class="check-item"><input type="checkbox" id="c5" checked><label for="c5">Limited social smile</label></div>
+              <div class="check-item"><input type="checkbox" id="c6"><label for="c6">Sensory sensitivities</label></div>
+              <div class="check-item"><input type="checkbox" id="c7" checked><label for="c7">Reduced pointing/gesturing</label></div>
+              <div class="check-item"><input type="checkbox" id="c8"><label for="c8">Regression of skills</label></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Family History of ASD</label>
+            <select class="form-select"><option>No</option><option>Yes — sibling</option><option>Yes — parent</option><option>Unknown</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Previous Assessment</label>
+            <select class="form-select"><option>None</option><option>M-CHAT completed</option><option>ADOS partially done</option></select>
+          </div>
+        </div>
+        <div style="background:var(--teal-light);border:1px solid var(--teal);border-radius:10px;padding:14px 18px;margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:4px;">🔍 Screening Agent — Preliminary Risk Flag</div>
+          <div style="font-size:12px;color:var(--text-mid);">Based on 5 checked developmental concerns, the Screening Agent has flagged this patient for <strong>full multimodal assessment</strong>. Threshold: ≥3 concerns → proceed to CV + EEG analysis.</div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-primary" onclick="gotoStep(2)">Next: CV Analysis →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: CV Analysis -->
+      <div class="step-panel" id="panel-2">
+        <div class="step-header">
+          <div class="step-badge">Step 2 of 5 · Computer Vision Module</div>
+          <h2 class="step-title">Computer Vision Analysis</h2>
+          <p class="step-subtitle">CNN + LSTM model processes video stream in real-time, extracting 6 validated ASD biomarker features from facial landmarks, gaze vectors, and body pose.</p>
+        </div>
+        <div class="cv-layout">
+          <!-- Simulated video -->
+          <div>
+            <div class="cv-video-box">
+              <div class="cv-scan-line"></div>
+              <div class="cv-video-overlay">
+                <div class="cv-face-box">
+                  <div class="cv-corner tl"></div><div class="cv-corner tr"></div>
+                  <div class="cv-corner bl"></div><div class="cv-corner br"></div>
+                </div>
+              </div>
+              <div class="gaze-point"></div>
+              <div class="cv-label">
+                <span class="cv-label-text">Frame: <span id="cv-frame-counter">0847</span></span>
+                <span class="cv-label-val">30fps · RGB</span>
+              </div>
+            </div>
+            <canvas id="cv-chart" height="120" style="margin-top:14px;border-radius:8px;background:var(--navy);padding:8px"></canvas>
+          </div>
+          <!-- CV Metrics -->
+          <div class="cv-metrics">
+            <div class="cv-metric-card">
+              <div class="cv-metric-header">
+                <span class="cv-metric-name">Eye Gaze Stability</span>
+                <span class="cv-metric-score" style="color:var(--red)">0.31 <small style="font-size:10px;font-weight:400;color:var(--text-light)">/ 1.0</small></span>
+              </div>
+              <div class="cv-metric-bar"><div class="cv-metric-fill" style="width:31%;background:var(--red)"></div></div>
+              <div class="cv-metric-note">⚠️ Significantly reduced fixation duration — consistent with ASD gaze patterns</div>
+            </div>
+            <div class="cv-metric-card">
+              <div class="cv-metric-header">
+                <span class="cv-metric-name">Joint Attention Frequency</span>
+                <span class="cv-metric-score" style="color:var(--red)">0.24</span>
+              </div>
+              <div class="cv-metric-bar"><div class="cv-metric-fill" style="width:24%;background:var(--red)"></div></div>
+              <div class="cv-metric-note">⚠️ Gaze-following & pointing episodes below 2σ neurotypical baseline</div>
+            </div>
+            <div class="cv-metric-card">
+              <div class="cv-metric-header">
+                <span class="cv-metric-name">Facial Affect Variability</span>
+                <span class="cv-metric-score" style="color:var(--amber)">0.48</span>
+              </div>
+              <div class="cv-metric-bar"><div class="cv-metric-fill" style="width:48%;background:var(--amber)"></div></div>
+              <div class="cv-metric-note">⚡ Reduced expression range — Action Unit entropy 1.8 std below mean</div>
+            </div>
+            <div class="cv-metric-card">
+              <div class="cv-metric-header">
+                <span class="cv-metric-name">Gesture Coordination</span>
+                <span class="cv-metric-score" style="color:var(--amber)">0.52</span>
+              </div>
+              <div class="cv-metric-bar"><div class="cv-metric-fill" style="width:52%;background:var(--amber)"></div></div>
+              <div class="cv-metric-note">⚡ Intentional gesture timing shows mild asynchrony</div>
+            </div>
+            <div class="cv-metric-card">
+              <div class="cv-metric-header">
+                <span class="cv-metric-name">Social Response Latency</span>
+                <span class="cv-metric-score" style="color:var(--red)">+1.8s</span>
+              </div>
+              <div class="cv-metric-bar"><div class="cv-metric-fill" style="width:75%;background:var(--red)"></div></div>
+              <div class="cv-metric-note">⚠️ 1.8s avg latency to social stimulus (neurotypical: &lt;0.5s)</div>
+            </div>
+            <div class="cv-metric-card">
+              <div class="cv-metric-header">
+                <span class="cv-metric-name">Repetitive Motor Pattern</span>
+                <span class="cv-metric-score" style="color:var(--amber)">0.61</span>
+              </div>
+              <div class="cv-metric-bar"><div class="cv-metric-fill" style="width:61%;background:var(--amber)"></div></div>
+              <div class="cv-metric-note">⚡ Periodic hand movement detected — 3 episodes in 5-min window</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--red-light);border:1px solid var(--red);border-radius:10px;padding:14px 18px;margin-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px;">🎥 CV Module Summary · Confidence: 87%</div>
+          <div style="font-size:12px;color:var(--text-mid);">3 of 6 features flagged BELOW 2σ neurotypical baseline. CV module risk estimate: <strong>0.71</strong>. Proceeding to EEG for cross-modal confirmation.</div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-secondary" onclick="gotoStep(1)">← Back</button>
+          <button class="btn-primary" onclick="gotoStep(3)">Next: EEG Analysis →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: EEG -->
+      <div class="step-panel" id="panel-3">
+        <div class="step-header">
+          <div class="step-badge">Step 3 of 5 · EEG Processing Module</div>
+          <h2 class="step-title">EEG Signal Processing</h2>
+          <p class="step-subtitle">16-channel EEG processed via ICA artifact removal, band power extraction (δ θ α β), and event-related potential analysis. 128Hz sampling.</p>
+        </div>
+        <div class="eeg-layout">
+          <div>
+            <div class="eeg-canvas-box">
+              <div class="eeg-channel-label">EEG · 16ch · 128Hz · ICA-cleaned · Epoch: 0–120s</div>
+              <canvas id="eeg-canvas" height="220"></canvas>
+            </div>
+            <!-- EEG power spectrum chart -->
+            <div style="margin-top:14px;">
+              <canvas id="eeg-spectrum" height="130"></canvas>
+            </div>
+          </div>
+          <div class="eeg-bands">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Band Power Analysis · Relative Power (%)</div>
+            <div class="eeg-band-card">
+              <div class="eeg-band-header">
+                <span class="eeg-band-name">Delta  δ</span>
+                <span class="eeg-band-hz">0.5–4 Hz</span>
+                <div class="eeg-status-badge badge-elevated">ELEVATED</div>
+              </div>
+              <div class="eeg-band-power" style="color:var(--amber)">38.2%</div>
+              <div class="eeg-band-bar"><div class="eeg-band-fill" style="width:76%;background:var(--amber)"></div></div>
+              <div class="eeg-band-finding">Elevated delta — linked to cortical maturation deficits in ASD (Bosl et al.)</div>
+            </div>
+            <div class="eeg-band-card">
+              <div class="eeg-band-header">
+                <span class="eeg-band-name">Theta  θ</span>
+                <span class="eeg-band-hz">4–8 Hz</span>
+                <div class="eeg-status-badge badge-alert">HIGH ⚠️</div>
+              </div>
+              <div class="eeg-band-power" style="color:var(--red)">29.4%</div>
+              <div class="eeg-band-bar"><div class="eeg-band-fill" style="width:88%;background:var(--red)"></div></div>
+              <div class="eeg-band-finding">Frontal theta excess — strongest discriminator, present in 73% of ASD cases aged 2–5 (Nature DM 2023)</div>
+            </div>
+            <div class="eeg-band-card">
+              <div class="eeg-band-header">
+                <span class="eeg-band-name">Alpha  α</span>
+                <span class="eeg-band-hz">8–13 Hz</span>
+                <div class="eeg-status-badge badge-alert">LOW ⚠️</div>
+              </div>
+              <div class="eeg-band-power" style="color:var(--red)">18.1%</div>
+              <div class="eeg-band-bar"><div class="eeg-band-fill" style="width:36%;background:var(--red)"></div></div>
+              <div class="eeg-band-finding">Reduced posterior alpha — sensory gating dysregulation marker</div>
+            </div>
+            <div class="eeg-band-card">
+              <div class="eeg-band-header">
+                <span class="eeg-band-name">Beta  β</span>
+                <span class="eeg-band-hz">13–30 Hz</span>
+                <div class="eeg-status-badge badge-normal">NORMAL</div>
+              </div>
+              <div class="eeg-band-power" style="color:var(--green)">14.3%</div>
+              <div class="eeg-band-bar"><div class="eeg-band-fill" style="width:57%;background:var(--green)"></div></div>
+              <div class="eeg-band-finding">Beta within normal range — motor control signal</div>
+            </div>
+            <div style="background:var(--red-light);border:1px solid var(--red);border-radius:8px;padding:12px;margin-top:4px;">
+              <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:4px;">ERP Analysis — P300 Latency</div>
+              <div style="font-size:11px;color:var(--text-mid);">P300: <strong style="color:var(--red);">428ms</strong> (NT mean: 310ms ± 40ms) — Prolonged face processing ERP consistent with ASD literature</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-secondary" onclick="gotoStep(2)">← Back</button>
+          <button class="btn-primary" onclick="runFusion()">Next: Run Fusion Engine →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Fusion Engine -->
+      <div class="step-panel" id="panel-4">
+        <div class="step-header">
+          <div class="step-badge">Step 4 of 5 · Multimodal Fusion Engine</div>
+          <h2 class="step-title">Attention-Based Fusion & Risk Scoring</h2>
+          <p class="step-subtitle">Late fusion via cross-modal attention aligns CV and EEG embeddings in a shared latent space. SHAP values quantify each feature's contribution to the risk score.</p>
+        </div>
+        <div class="fusion-container">
+          <!-- Flow -->
+          <div class="fusion-flow">
+            <div class="fusion-input">
+              <div class="fusion-input-icon">📹</div>
+              <div class="fusion-input-name">Computer Vision</div>
+              <div class="fusion-input-val">Risk: 0.71</div>
+              <div class="fusion-input-val">6 features</div>
+            </div>
+            <div class="fusion-arrow">⊕</div>
+            <div class="fusion-input">
+              <div class="fusion-input-icon">🧠</div>
+              <div class="fusion-input-name">EEG Signals</div>
+              <div class="fusion-input-val">Risk: 0.78</div>
+              <div class="fusion-input-val">4 bands + ERP</div>
+            </div>
+            <div class="fusion-arrow">⊕</div>
+            <div class="fusion-input">
+              <div class="fusion-input-icon">📋</div>
+              <div class="fusion-input-name">Behavioral Form</div>
+              <div class="fusion-input-val">Risk: 0.68</div>
+              <div class="fusion-input-val">10-item ADOS-2</div>
+            </div>
+          </div>
+
+          <!-- Engine output -->
+          <div class="fusion-engine-box">
+            <div class="fusion-engine-glow"></div>
+            <div style="position:relative;z-index:2;">
+              <div class="fusion-engine-title">⚡ Attention Fusion Engine · Shared Latent Space</div>
+              <div class="risk-score-big" id="animated-score">0.74</div>
+              <div class="risk-label">Multimodal ASD Risk Score</div>
+              <div class="risk-ci mono">95% CI: [0.68, 0.81]</div>
+              <div class="risk-level">🟠 MODERATE-HIGH RISK — Recommend Clinical Assessment</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;text-align:left;">
+                <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;">
+                  <div style="font-size:10px;color:var(--text-light);margin-bottom:4px;">CV WEIGHT</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--teal);">38%</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;">
+                  <div style="font-size:10px;color:var(--text-light);margin-bottom:4px;">EEG WEIGHT</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--amber);">44%</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;">
+                  <div style="font-size:10px;color:var(--text-light);margin-bottom:4px;">BEHAVIORAL</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--purple);">18%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SHAP -->
+          <div class="shap-section">
+            <div class="shap-title">SHAP Feature Contribution Analysis</div>
+            <div class="shap-sub">← Decreases risk · Increases risk → &nbsp;|&nbsp; Baseline: 0.50</div>
+            <div class="shap-bars" id="shap-bars">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+        <div class="step-nav" style="max-width:800px;margin:20px auto 0;">
+          <button class="btn-secondary" onclick="gotoStep(3)">← Back</button>
+          <button class="btn-primary" onclick="gotoStep(5)">Next: Clinical Report →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Clinical Report -->
+      <div class="step-panel" id="panel-5">
+        <div class="step-header">
+          <div class="step-badge">Step 5 of 5 · Clinical Support Agent</div>
+          <h2 class="step-title">Clinical Report & Therapy Plan</h2>
+          <p class="step-subtitle">The Clinical Support Agent synthesizes all modalities into an evidence-based report with recommendations and a personalized therapy plan from the Therapy Planning Agent.</p>
+        </div>
+
+        <!-- Report header card -->
+        <div class="report-card">
+          <div class="report-card-header" style="background:var(--red-light);">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Clinical Support Agent Output</div>
+              <div style="font-size:16px;font-weight:700;color:var(--navy);">ASD Screening Report · <span id="rep-name">Arjun Sharma</span> · ID: EAR-2026-0042</div>
+              <div style="font-size:12px;color:var(--text-mid);margin-top:2px;">Generated: <span class="mono">2026-02-26 14:32:07 IST</span> · Model version: EarlyArc-v1.0.3</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:36px;font-weight:700;color:var(--red);">0.74</div>
+              <div class="risk-pill risk-high">HIGH RISK</div>
+            </div>
+          </div>
+          <div class="report-card-body">
+            <div class="recommendation-tag tag-urgent">🚨 Recommendation: Immediate Specialist Referral</div>
+            <div style="font-size:13px;color:var(--text-mid);line-height:1.7;">
+              Multimodal assessment across CV, EEG, and behavioral domains consistently identifies risk markers associated with ASD. Risk score 0.74 (95% CI: 0.68–0.81) exceeds the 0.70 clinical referral threshold. <strong>Recommend urgent referral to child neurologist or developmental pediatrician for formal ADOS-2/ADI-R evaluation.</strong> Three of six CV features and two EEG bands fall below 2σ neurotypical baseline, with P300 latency significantly prolonged (+118ms).
+            </div>
+          </div>
+        </div>
+
+        <!-- Domain assessment -->
+        <div class="report-card">
+          <div class="report-card-header" style="background:var(--navy);">
+            <div class="report-card-title" style="color:var(--white);">📊 Domain Deficit Profile</div>
+          </div>
+          <div class="report-card-body">
+            <div class="domain-grid">
+              <div class="domain-card">
+                <div class="domain-name">Social Communication</div>
+                <div class="domain-score-bar"><div class="domain-score-fill" style="width:28%;background:var(--red)"></div></div>
+                <div class="domain-score-val" style="color:var(--red)">28 / 100</div>
+              </div>
+              <div class="domain-card">
+                <div class="domain-name">Eye Gaze & Attention</div>
+                <div class="domain-score-bar"><div class="domain-score-fill" style="width:31%;background:var(--red)"></div></div>
+                <div class="domain-score-val" style="color:var(--red)">31 / 100</div>
+              </div>
+              <div class="domain-card">
+                <div class="domain-name">Emotional Recognition</div>
+                <div class="domain-score-bar"><div class="domain-score-fill" style="width:42%;background:var(--amber)"></div></div>
+                <div class="domain-score-val" style="color:var(--amber)">42 / 100</div>
+              </div>
+              <div class="domain-card">
+                <div class="domain-name">Motor Skills</div>
+                <div class="domain-score-bar"><div class="domain-score-fill" style="width:65%;background:var(--green)"></div></div>
+                <div class="domain-score-val" style="color:var(--green)">65 / 100</div>
+              </div>
+              <div class="domain-card">
+                <div class="domain-name">Sensory Processing</div>
+                <div class="domain-score-bar"><div class="domain-score-fill" style="width:38%;background:var(--amber)"></div></div>
+                <div class="domain-score-val" style="color:var(--amber)">38 / 100</div>
+              </div>
+              <div class="domain-card">
+                <div class="domain-name">Repetitive Behavior</div>
+                <div class="domain-score-bar"><div class="domain-score-fill" style="width:55%;background:var(--amber)"></div></div>
+                <div class="domain-score-val" style="color:var(--amber)">55 / 100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Therapy Plan -->
+        <div class="report-card">
+          <div class="report-card-header" style="background:var(--navy);">
+            <div class="report-card-title" style="color:var(--white);">🎯 Therapy Planning Agent — Initial Module Assignment</div>
+          </div>
+          <div class="report-card-body">
+            <div class="therapy-modules">
+              <div class="therapy-module">
+                <div class="module-icon">👁️</div>
+                <div class="module-info">
+                  <div class="module-name">Gaze Training (ABA)</div>
+                  <div class="module-sessions">5 sessions/week · 45 min</div>
+                </div>
+                <div class="module-priority priority-high">HIGH</div>
+              </div>
+              <div class="therapy-module">
+                <div class="module-icon">🗣️</div>
+                <div class="module-info">
+                  <div class="module-name">Speech-Language Therapy</div>
+                  <div class="module-sessions">3 sessions/week · 45 min</div>
+                </div>
+                <div class="module-priority priority-high">HIGH</div>
+              </div>
+              <div class="therapy-module">
+                <div class="module-icon">🤝</div>
+                <div class="module-info">
+                  <div class="module-name">Social Skills (ESDM)</div>
+                  <div class="module-sessions">3 sessions/week · 60 min</div>
+                </div>
+                <div class="module-priority priority-high">HIGH</div>
+              </div>
+              <div class="therapy-module">
+                <div class="module-icon">🎨</div>
+                <div class="module-info">
+                  <div class="module-name">Occupational Therapy</div>
+                  <div class="module-sessions">2 sessions/week · 45 min</div>
+                </div>
+                <div class="module-priority priority-med">MEDIUM</div>
+              </div>
+              <div class="therapy-module">
+                <div class="module-icon">👨‍👩‍👦</div>
+                <div class="module-info">
+                  <div class="module-name">Parent Training (PECS)</div>
+                  <div class="module-sessions">1 session/week · 60 min</div>
+                </div>
+                <div class="module-priority priority-med">MEDIUM</div>
+              </div>
+              <div class="therapy-module">
+                <div class="module-icon">🔄</div>
+                <div class="module-info">
+                  <div class="module-name">Progress Monitoring Setup</div>
+                  <div class="module-sessions">Daily log · Parent app</div>
+                </div>
+                <div class="module-priority priority-high">ONGOING</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn-secondary" onclick="gotoStep(4)">← Back</button>
+          <button class="btn-primary" onclick="showScreen('dashboard')">View Dashboard →</button>
+          <button class="btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+        </div>
+      </div>
+
+    </div><!-- end screening-main -->
+  </div><!-- end screening-layout -->
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN: CLINICIAN DASHBOARD               -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">Clinician Dashboard</div>
+      <div class="dash-date">EarlyArc Platform · IIT Guwahati Pilot · 26 Feb 2026</div>
+    </div>
+    <button class="btn-primary" onclick="startScreening()">+ New Screening</button>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon">🧒</div>
+      <div class="kpi-val">124</div>
+      <div class="kpi-label">Active Patients</div>
+      <div class="kpi-trend trend-up">↑ +12 this week</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🔍</div>
+      <div class="kpi-val">38</div>
+      <div class="kpi-label">Screenings Today</div>
+      <div class="kpi-trend trend-up">↑ +6 vs yesterday</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⚠️</div>
+      <div class="kpi-val">7</div>
+      <div class="kpi-label">High Risk Flags</div>
+      <div class="kpi-trend trend-dn">Needs review</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-val">0.93</div>
+      <div class="kpi-label">Model AUC (Pilot)</div>
+      <div class="kpi-trend trend-up">↑ Exceeds target</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-val">89%</div>
+      <div class="kpi-label">Avg Sensitivity</div>
+      <div class="kpi-trend trend-up">↑ vs 40% baseline</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="dash-grid">
+    <div class="dash-card">
+      <div class="dash-card-title">Weekly Screenings</div>
+      <div class="dash-card-sub">Volume by risk level · last 8 weeks</div>
+      <canvas id="dash-screenings" height="160"></canvas>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Risk Score Distribution</div>
+      <div class="dash-card-sub">All patients this month</div>
+      <canvas id="dash-distribution" height="160"></canvas>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Agent Activity</div>
+      <div class="dash-card-sub">Last 30 minutes</div>
+      <div class="agent-activity" id="agent-feed">
+        <div class="agent-event">
+          <div class="agent-event-icon" style="background:var(--teal-light)">🔍</div>
+          <div><div class="agent-event-text"><strong>Screening Agent</strong> flagged Priya K. (36mo, F) — 4 concerns. Escalated to Clinical Support.</div><div class="agent-event-time">2 min ago</div></div>
+        </div>
+        <div class="agent-event">
+          <div class="agent-event-icon" style="background:var(--amber-light)">🧠</div>
+          <div><div class="agent-event-text"><strong>Clinical Support</strong> generated report for Rahul M. — Risk 0.81. Specialist referral sent.</div><div class="agent-event-time">8 min ago</div></div>
+        </div>
+        <div class="agent-event">
+          <div class="agent-event-icon" style="background:var(--purple-light)">📋</div>
+          <div><div class="agent-event-text"><strong>Therapy Planning</strong> updated Arjun S. plan — Gaze module intensity increased (week 4 stagnation).</div><div class="agent-event-time">15 min ago</div></div>
+        </div>
+        <div class="agent-event">
+          <div class="agent-event-icon" style="background:var(--green-light)">📈</div>
+          <div><div class="agent-event-text"><strong>Progress Monitor</strong> detected improvement in social response for Meera L. — Parent notified.</div><div class="agent-event-time">22 min ago</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient list + progress -->
+  <div class="dash-grid-wide">
+    <div class="dash-card">
+      <div class="dash-card-title">Patient Queue — High Priority</div>
+      <div class="dash-card-sub">Sorted by risk score · requires clinician action</div>
+      <table class="patient-table">
+        <thead>
+          <tr>
+            <th>Patient</th><th>Age</th><th>Risk Score</th><th>CV</th><th>EEG</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Arjun Sharma</strong></td><td>3y 4m</td>
+            <td><div class="risk-pill risk-high">0.74</div></td>
+            <td style="color:var(--red)">0.71</td><td style="color:var(--amber)">0.78</td>
+            <td><span style="color:var(--amber);font-size:12px;font-weight:600">⏳ Awaiting referral</span></td>
+            <td><button class="action-btn" onclick="startScreening()">View</button></td>
+          </tr>
+          <tr>
+            <td><strong>Rahul Mehta</strong></td><td>2y 11m</td>
+            <td><div class="risk-pill risk-high">0.81</div></td>
+            <td style="color:var(--red)">0.79</td><td style="color:var(--red)">0.83</td>
+            <td><span style="color:var(--red);font-size:12px;font-weight:600">🚨 Refer NOW</span></td>
+            <td><button class="action-btn">View</button></td>
+          </tr>
+          <tr>
+            <td><strong>Priya Kumar</strong></td><td>3y 0m</td>
+            <td><div class="risk-pill risk-mod">0.62</div></td>
+            <td style="color:var(--amber)">0.59</td><td style="color:var(--amber)">0.65</td>
+            <td><span style="color:var(--amber);font-size:12px;font-weight:600">📋 Review needed</span></td>
+            <td><button class="action-btn">View</button></td>
+          </tr>
+          <tr>
+            <td><strong>Anya Patel</strong></td><td>4y 2m</td>
+            <td><div class="risk-pill risk-mod">0.55</div></td>
+            <td style="color:var(--amber)">0.52</td><td style="color:var(--green)">0.48</td>
+            <td><span style="color:var(--green);font-size:12px;font-weight:600">✅ Monitoring</span></td>
+            <td><button class="action-btn">View</button></td>
+          </tr>
+          <tr>
+            <td><strong>Vikram Joshi</strong></td><td>2y 8m</td>
+            <td><div class="risk-pill risk-low">0.28</div></td>
+            <td style="color:var(--green)">0.25</td><td style="color:var(--green)">0.31</td>
+            <td><span style="color:var(--green);font-size:12px;font-weight:600">✅ Low risk</span></td>
+            <td><button class="action-btn">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">Therapy Progress — Arjun S.</div>
+      <div class="dash-card-sub">Week 4 tracking · EarlyArc Therapy Plan v1.2</div>
+      <div class="progress-item">
+        <div class="progress-header"><span class="progress-domain">👁️ Gaze Stability</span><span class="progress-val">44 → 58 (+14)</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:58%;background:var(--teal)"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span class="progress-domain">🗣️ Verbal Communication</span><span class="progress-val">22 → 35 (+13)</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:35%;background:var(--amber)"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span class="progress-domain">🤝 Social Initiation</span><span class="progress-val">18 → 29 (+11)</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:29%;background:var(--amber)"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span class="progress-domain">🔄 Repetitive Behavior ↓</span><span class="progress-val">68 → 54 (-14)</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:54%;background:var(--purple)"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span class="progress-domain">🎨 Fine Motor Skills</span><span class="progress-val">62 → 71 (+9)</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:71%;background:var(--green)"></div></div>
+      </div>
+      <div style="margin-top:14px;">
+        <canvas id="dash-progress" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN: ABOUT / PLATFORM                  -->
+<!-- ══════════════════════════════════════════ -->
+<div id="screen-about" class="screen">
+  <div style="margin-bottom:28px;">
+    <div style="font-family:'DM Serif Display',serif;font-size:32px;color:var(--navy);">Platform Architecture & Team</div>
+    <div style="font-size:14px;color:var(--text-mid);margin-top:6px;">EarlyArc — AI-Enabled Multimodal Autism Screening · Tata Elxsi Teliport Season 3</div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="about-card-title">🧠 Technical Architecture</div>
+      <div style="font-size:13px;color:var(--text-mid);line-height:1.8;">
+        <div style="margin-bottom:10px;"><strong style="color:var(--navy);">Layer A — Multimodal Ingestion:</strong> Video streams (RGB, 30fps), EEG signals (8–32ch, 128–256Hz), behavioral scoring forms (ADOS-2 adapted), therapy session logs</div>
+        <div style="margin-bottom:10px;"><strong style="color:var(--navy);">Layer B — Feature Extraction:</strong> CNN+LSTM/Transformer for CV; ICA+STFT+DNN for EEG; 15 CV features + 12 EEG features per session</div>
+        <div style="margin-bottom:10px;"><strong style="color:var(--navy);">Layer C — Fusion Engine:</strong> Attention-based late fusion in shared latent space; SHAP explainability; 95% confidence intervals</div>
+        <div><strong style="color:var(--navy);">Layer D — Agentic AI:</strong> 4 autonomous agents with Rule+ML hybrid logic; event-driven orchestration; full audit trail</div>
+      </div>
+      <div class="tech-stack">
+        <span class="tech-tag">PyTorch</span><span class="tech-tag">MediaPipe</span>
+        <span class="tech-tag">MNE-Python</span><span class="tech-tag">SHAP</span>
+        <span class="tech-tag">FastAPI</span><span class="tech-tag">React</span>
+        <span class="tech-tag">PostgreSQL</span><span class="tech-tag">FHIR R4</span>
+        <span class="tech-tag">Docker</span><span class="tech-tag">AES-256</span>
+      </div>
+    </div>
+
+    <div class="about-card">
+      <div class="about-card-title">👥 Team The Innovators</div>
+      <div class="team-member">
+        <div class="member-avatar">👩‍💻</div>
+        <div>
+          <div class="member-name">Samiksha Mitra</div>
+          <div class="member-role">B.Tech Civil Engineering · IIT Guwahati</div>
+          <div class="member-role">WorldQuant BRAIN Research Consultant · NISM V-A Certified</div>
+          <div class="member-role">Overall Coordinator, 4i Labs (200+ members)</div>
+        </div>
+      </div>
+      <div class="team-member">
+        <div class="member-avatar">👨‍💻</div>
+        <div>
+          <div class="member-name">Rupangkan Mazumdar</div>
+          <div class="member-role">B.Tech · IIT Guwahati</div>
+          <div class="member-role">Co-developer, EarlyArc Platform</div>
+        </div>
+      </div>
+      <div style="background:var(--teal-light);border-radius:8px;padding:12px;margin-top:10px;">
+        <div style="font-size:12px;color:var(--teal-dark);font-weight:600;">Submission: Tata Elxsi TELIPORT Season 3 · Round 2</div>
+        <div style="font-size:11px;color:var(--text-mid);margin-top:4px;">Case Study No. 4 · Team: The Innovators · Institute: IIT Guwahati</div>
+      </div>
+    </div>
+
+    <div class="about-card">
+      <div class="about-card-title">📊 Clinical Evidence Base</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.9;">
+        <div>→ EEG theta/alpha abnormalities in <strong>73% of ASD children 2–5y</strong> (Bosl et al., Neuron 2022)</div>
+        <div>→ Eye gaze deviation detectable with <strong>>85% accuracy via CNN</strong> (Wang, Nature DM 2023)</div>
+        <div>→ Multimodal fusion improves AUC by <strong>+12%</strong> over single modality (IEEE TBME 2023)</div>
+        <div>→ Early intervention yields <strong>47% better outcomes</strong> (JAMA Pediatrics 2024)</div>
+        <div>→ RL therapy adaptation improves skill acquisition <strong>35%</strong> (J. Child Psychology 2023)</div>
+        <div>→ P300 latency prolonged (+100ms avg) in ASD vs NT (Brain & Cognition 2021)</div>
+      </div>
+    </div>
+
+    <div class="about-card">
+      <div class="about-card-title">🚀 Deployment & Regulatory</div>
+      <div style="font-size:12px;color:var(--text-mid);line-height:1.9;">
+        <div><strong style="color:var(--navy);">Edge deployment:</strong> MobileNet-based CV inference — offline capable, works on Android tablets</div>
+        <div><strong style="color:var(--navy);">Cloud backend:</strong> FastAPI + PostgreSQL — FHIR R4 compliant for EHR integration</div>
+        <div><strong style="color:var(--navy);">Security:</strong> AES-256 encryption · Consent-driven AA Framework · DPDP Act 2023 compliant</div>
+        <div><strong style="color:var(--navy);">Regulatory pathway:</strong> FDA De Novo (USA) · CE Mark Class IIb (EU) · CDSCO Class C (India)</div>
+        <div><strong style="color:var(--navy);">Pilot:</strong> 2 hospitals · 500+ sessions · AUC 0.93 achieved</div>
+        <div><strong style="color:var(--navy);">Market:</strong> $8.7B TAM · 22.4% CAGR · $340M SOM in 5 years</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<!-- Processing Overlay -->
+<div id="processing-overlay">
+  <div class="processing-ring"></div>
+  <div class="processing-text">EarlyArc Fusion Engine</div>
+  <div class="processing-sub">Running multimodal attention fusion across CV, EEG, and behavioral modalities...</div>
+  <div class="processing-steps" id="proc-steps">
+    <div class="proc-step done" id="ps-1"><div class="proc-step-dot"></div>CV feature extraction complete (6 features)</div>
+    <div class="proc-step done" id="ps-2"><div class="proc-step-dot"></div>EEG band power + ERP analysis complete</div>
+    <div class="proc-step active" id="ps-3"><div class="proc-step-dot"></div>Attention-based late fusion running...</div>
+    <div class="proc-step pending" id="ps-4"><div class="proc-step-dot"></div>SHAP contribution analysis</div>
+    <div class="proc-step pending" id="ps-5"><div class="proc-step-dot"></div>Generating clinical report</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+let currentScreen = 'landing';
+const screens = ['landing','screening','dashboard','about'];
+const navLabels = ['Home','Live Screening','Clinician Dashboard','Platform & Team'];
+
+function showScreen(name) {
+  screens.forEach(id => {
+    document.getElementById('screen-'+id).classList.remove('active');
+  });
+  document.getElementById('screen-'+name).classList.add('active');
+  currentScreen = name;
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    t.classList.toggle('active', navLabels[i].toLowerCase().includes(name.toLowerCase()) || (name==='landing'&&i===0) || (name==='screening'&&i===1) || (name==='dashboard'&&i===2) || (name==='about'&&i===3));
+  });
+  if(name==='dashboard') initDashCharts();
+  if(name==='screening') initScreeningCharts();
+}
+
+function startScreening() {
+  showScreen('screening');
+  gotoStep(1);
+}
+
+// ══════════════════════════════════════════════════
+// STEP NAVIGATION
+// ══════════════════════════════════════════════════
+let currentStep = 1;
+function gotoStep(n) {
+  [1,2,3,4,5].forEach(i => {
+    document.getElementById('panel-'+i).classList.remove('active');
+    const ss = document.getElementById('sstep-'+i);
+    ss.classList.remove('active','done');
+    if(i < n) { ss.classList.add('done'); document.getElementById('snum-'+i).innerHTML='✓'; }
+    else { document.getElementById('snum-'+i).textContent=i; }
+  });
+  document.getElementById('panel-'+n).classList.add('active');
+  document.getElementById('sstep-'+n).classList.add('active');
+  currentStep = n;
+  if(n===3) initEEGCanvas();
+  if(n===4) initShapBars();
+  if(n===2) initCVChart();
+}
+
+function runFusion() {
+  const overlay = document.getElementById('processing-overlay');
+  overlay.classList.add('show');
+  const steps = ['ps-1','ps-2','ps-3','ps-4','ps-5'];
+  steps.forEach(id => { document.getElementById(id).className='proc-step pending'; });
+  let i=0;
+  const interval = setInterval(()=>{
+    if(i>0) { document.getElementById(steps[i-1]).className='proc-step done'; }
+    if(i<steps.length) { document.getElementById(steps[i]).className='proc-step active'; i++; }
+    else {
+      clearInterval(interval);
+      setTimeout(()=>{
+        overlay.classList.remove('show');
+        gotoStep(4);
+        showToast('✅ Fusion complete — Risk Score: 0.74 (HIGH)');
+      }, 600);
+    }
+  }, 700);
+}
+
+function updateSidebar() {
+  const name = document.getElementById('f-name').value;
+  const ageMo = parseInt(document.getElementById('f-age').value)||40;
+  const gender = document.getElementById('f-gender').value;
+  const yr = Math.floor(ageMo/12), mo = ageMo%12;
+  document.getElementById('sb-name').textContent = name+' S.';
+  document.getElementById('sb-age').textContent = `${yr}y ${mo}m`;
+  document.getElementById('sb-gender').textContent = gender;
+  document.getElementById('rep-name').textContent = name+' Sharma';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════════════════
+// LANDING EEG ANIMATION
+// ══════════════════════════════════════════════════
+function initLandingEEG() {
+  const canvas = document.getElementById('landing-eeg');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 160;
+  let phase = 0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#0D2137';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // Draw 3 EEG channels
+    const colors = ['#00A693','#E07B24','#6B46C1'];
+    const offsets = [0.2, 0.5, 0.8];
+    colors.forEach((col,ci) => {
+      ctx.beginPath();
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.9;
+      const cy = canvas.height * offsets[ci];
+      for(let x=0;x<canvas.width;x++) {
+        const t = x/canvas.width * Math.PI*6 + phase + ci*2;
+        const noise = (Math.random()-0.5)*4;
+        const y = cy + Math.sin(t)*18 + Math.sin(t*3.2)*6 + Math.sin(t*0.7)*10 + noise;
+        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+    phase += 0.05;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ══════════════════════════════════════════════════
+// EEG CANVAS (Step 3)
+// ══════════════════════════════════════════════════
+let eegPhase=0, eegRAF;
+function initEEGCanvas() {
+  if(eegRAF) cancelAnimationFrame(eegRAF);
+  const canvas = document.getElementById('eeg-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 1.5;
+  canvas.height = 330;
+  const channels = ['Fp1','Fp2','F3','F4','C3','C4'];
+  const cols = ['#00A693','#E07B24','#C0392B','#6B46C1','#27AE60','#1A3A5C'];
+  function draw() {
+    ctx.fillStyle='#0D2137'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    channels.forEach((ch,ci) => {
+      const cy = 30 + ci*48;
+      // Label
+      ctx.fillStyle='#94A3B8'; ctx.font='bold 16px JetBrains Mono,monospace';
+      ctx.fillText(ch, 8, cy+4);
+      // Wave
+      ctx.beginPath(); ctx.strokeStyle=cols[ci]; ctx.lineWidth=1.5;
+      const amp = ci===1 ? 22 : ci===2 ? 14 : 12; // theta channel = higher amp
+      for(let x=50;x<canvas.width;x++) {
+        const t = (x-50)/(canvas.width-50)*Math.PI*10+eegPhase+ci*1.5;
+        const noise=(Math.random()-0.5)*3;
+        const spike = ci===1&&Math.sin(t*0.3)>0.95?18:0; // theta spikes
+        const y=cy+Math.sin(t)*amp+Math.sin(t*3+ci)*5+Math.sin(t*0.5)*8+noise+spike;
+        x===50?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
+    // Grid lines
+    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=0.5;
+    for(let x=50;x<canvas.width;x+=80) {
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+    }
+    eegPhase+=0.07;
+    eegRAF=requestAnimationFrame(draw);
+  }
+  draw();
+
+  // EEG Spectrum chart
+  const specCtx = document.getElementById('eeg-spectrum');
+  if(specCtx && !specCtx._chartInstance) {
+    specCtx._chartInstance = new Chart(specCtx, {
+      type:'bar',
+      data:{
+        labels:['0','2','4','6','8','10','12','14','16','18','20','22','24','26','28','30'],
+        datasets:[{
+          label:'Power Spectral Density',
+          data:[12,22,35,42,48,39,28,18,13,14,15,12,10,9,8,7],
+          backgroundColor:(ctx)=>{
+            const val=ctx.raw;
+            if(val>40) return '#C0392B';
+            if(val>25) return '#E07B24';
+            return '#00A693';
+          },
+          borderRadius:2,
+        }]
+      },
+      options:{
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{title:{display:true,text:'Frequency (Hz)',color:'#94A3B8',font:{size:10}},ticks:{color:'#94A3B8',font:{size:9}}},
+          y:{title:{display:true,text:'Power (μV²/Hz)',color:'#94A3B8',font:{size:10}},ticks:{color:'#94A3B8',font:{size:9}}},
+        },
+        backgroundColor:'#0D2137',
+      }
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════
+// CV TIMELINE CHART (Step 2)
+// ══════════════════════════════════════════════════
+function initCVChart() {
+  const canvas = document.getElementById('cv-chart');
+  if(!canvas||canvas._chartInstance) return;
+  const labels = Array.from({length:30},(_,i)=>i*2+'s');
+  const gazeData = Array.from({length:30},()=>Math.random()*0.4+0.1);
+  const jointData = Array.from({length:30},()=>Math.random()*0.35+0.05);
+  canvas._chartInstance = new Chart(canvas, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Eye Gaze Stability',data:gazeData,borderColor:'#00A693',backgroundColor:'rgba(0,166,147,0.1)',fill:true,tension:0.4,borderWidth:1.5,pointRadius:0},
+        {label:'Joint Attention',data:jointData,borderColor:'#E07B24',backgroundColor:'rgba(224,123,36,0.1)',fill:true,tension:0.4,borderWidth:1.5,pointRadius:0},
+      ]
+    },
+    options:{
+      plugins:{legend:{labels:{color:'#94A3B8',font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#94A3B8',font:{size:9}},grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{min:0,max:1,ticks:{color:'#94A3B8',font:{size:9}},grid:{color:'rgba(255,255,255,0.05)'}},
+      },
+      animation:{duration:0},
+    }
+  });
+
+  // Animate frame counter
+  let frame=847;
+  setInterval(()=>{
+    const el=document.getElementById('cv-frame-counter');
+    if(el) el.textContent = (frame++).toString().padStart(4,'0');
+  }, 33);
+}
+
+// ══════════════════════════════════════════════════
+// SHAP BARS (Step 4)
+// ══════════════════════════════════════════════════
+function initShapBars() {
+  const shapData = [
+    {feat:'Frontal θ Band Power',val:+0.18,dir:'pos'},
+    {feat:'Eye Gaze Stability ↓',val:+0.16,dir:'pos'},
+    {feat:'Joint Attention Freq.',val:+0.12,dir:'pos'},
+    {feat:'Social Response Latency',val:+0.10,dir:'pos'},
+    {feat:'P300 Latency (+118ms)',val:+0.09,dir:'pos'},
+    {feat:'Facial Affect Variability',val:+0.07,dir:'pos'},
+    {feat:'Repetitive Motor Pattern',val:+0.05,dir:'pos'},
+    {feat:'Alpha Band Power',val:+0.04,dir:'pos'},
+    {feat:'Motor Skills (Normal)',val:-0.05,dir:'neg'},
+    {feat:'Beta Band (Normal)',val:-0.02,dir:'neg'},
+  ];
+  const container = document.getElementById('shap-bars');
+  if(!container) return;
+  container.innerHTML='';
+  shapData.forEach(d=>{
+    const pct = Math.abs(d.val)/0.2*45;
+    const row=document.createElement('div'); row.className='shap-row';
+    row.innerHTML=`
+      <div class="shap-feat">${d.feat}</div>
+      <div class="shap-bar-container">
+        <div class="shap-center-line"></div>
+        ${d.dir==='pos'
+          ?`<div class="shap-bar-pos" style="width:${pct}%"></div>`
+          :`<div class="shap-bar-neg" style="width:${Math.abs(pct)}%"></div>`
+        }
+      </div>
+      <div class="shap-val" style="color:${d.dir==='pos'?'var(--teal)':'var(--red)'}">
+        ${d.val>0?'+':''}${d.val.toFixed(3)}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD CHARTS
+// ══════════════════════════════════════════════════
+let dashChartsInit=false;
+function initDashCharts() {
+  if(dashChartsInit) return;
+  dashChartsInit=true;
+
+  // Screenings bar chart
+  const sc=document.getElementById('dash-screenings');
+  if(sc) new Chart(sc,{
+    type:'bar',
+    data:{
+      labels:['Jan 6','Jan 13','Jan 20','Jan 27','Feb 3','Feb 10','Feb 17','Feb 24'],
+      datasets:[
+        {label:'High Risk',data:[3,5,4,7,6,8,7,9],backgroundColor:'#C0392B',borderRadius:3},
+        {label:'Moderate',data:[8,12,10,14,11,15,13,16],backgroundColor:'#E07B24',borderRadius:3},
+        {label:'Low Risk',data:[12,18,15,20,17,22,19,24],backgroundColor:'#00A693',borderRadius:3},
+      ]
+    },
+    options:{plugins:{legend:{labels:{color:'#4A5568',font:{size:10}}}},
+      scales:{x:{stacked:true,ticks:{color:'#94A3B8',font:{size:10}},grid:{display:false}},
+              y:{stacked:true,ticks:{color:'#94A3B8',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}
+    }
+  });
+
+  // Distribution
+  const dist=document.getElementById('dash-distribution');
+  if(dist) new Chart(dist,{
+    type:'bar',
+    data:{
+      labels:['0–0.1','0.1–0.2','0.2–0.3','0.3–0.4','0.4–0.5','0.5–0.6','0.6–0.7','0.7–0.8','0.8–0.9','0.9–1.0'],
+      datasets:[{
+        label:'Patients',
+        data:[5,8,12,16,22,18,12,8,5,3],
+        backgroundColor:['#27AE60','#27AE60','#27AE60','#27AE60','#27AE60','#E07B24','#E07B24','#C0392B','#C0392B','#C0392B'],
+        borderRadius:3,
+      }]
+    },
+    options:{plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#94A3B8',font:{size:9}},grid:{display:false}},
+              y:{ticks:{color:'#94A3B8',font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}}
+    }
+  });
+
+  // Progress chart (line)
+  const prog=document.getElementById('dash-progress');
+  if(prog) new Chart(prog,{
+    type:'line',
+    data:{
+      labels:['Wk1','Wk2','Wk3','Wk4'],
+      datasets:[
+        {label:'Gaze',data:[44,49,53,58],borderColor:'#00A693',fill:false,tension:0.4,borderWidth:2},
+        {label:'Speech',data:[22,27,31,35],borderColor:'#E07B24',fill:false,tension:0.4,borderWidth:2},
+        {label:'Social',data:[18,22,26,29],borderColor:'#6B46C1',fill:false,tension:0.4,borderWidth:2},
+      ]
+    },
+    options:{
+      plugins:{legend:{labels:{color:'#4A5568',font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'#94A3B8',font:{size:10}},grid:{display:false}},
+        y:{min:0,max:100,ticks:{color:'#94A3B8',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},
+      }
+    }
+  });
+}
+
+function initScreeningCharts() {
+  // reset
+}
+
+// ══════════════════════════════════════════════════
+// LIVE METRIC ANIMATIONS (Landing)
+// ══════════════════════════════════════════════════
+function animateLandingMetrics() {
+  const scores=[0.68,0.71,0.74,0.72,0.75,0.73];
+  const confs=[85,87,88,86,89,88];
+  let idx=0;
+  setInterval(()=>{
+    idx=(idx+1)%scores.length;
+    const el1=document.getElementById('lm1');
+    const el2=document.getElementById('lm2');
+    if(el1) el1.textContent=scores[idx].toFixed(2);
+    if(el2) el2.textContent=confs[idx]+'%';
+  }, 2000);
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  initLandingEEG();
+  animateLandingMetrics();
+  // Show landing by default
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{
+    t.onclick=()=>showScreen(['landing','screening','dashboard','about'][i]);
+  });
+});
+</script>
+</body>
+</html>
