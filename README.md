@@ -7,7 +7,7 @@
 
 ## 🚀 Live Demo
 
-**Hosted on Netlify:** Drop the `earlyarc/` folder at [Github](https://samik123mit.github.io/EarlyArc/)  
+**Hosted on Github Pages:** Open the `earlyarc/` live deployed site at [Github](https://samik123mit.github.io/EarlyArc/)  
 **Run locally:** Just open `index.html` in any browser — no server, no install needed.
 
 ---
